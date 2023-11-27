@@ -53,6 +53,21 @@ bool BurstyLoss::drop_packet( const string & packet __attribute((unused)) )
     }
 }
 
+bool GELoss::drop_packet( const string & packet __attribute((unused)) )
+{
+    if ( in_bad_state_ ) {
+        in_bad_state_ = not ( leave_bad_dist_( prng_ ) );
+    } else {
+        in_bad_state_ = leave_good_dist_( prng_ );
+    }
+
+    if ( in_bad_state_ ) {
+        return drop_bad_dist_( prng_ );
+    } else {
+        return drop_good_dist_( prng_ );
+    }
+}
+
 static const double MS_PER_SECOND = 1000.0;
 
 StochasticSwitchingLink::StochasticSwitchingLink( const double mean_on_time, const double mean_off_time )

@@ -69,6 +69,32 @@ public:
                 << " loss rate " << loss_rate << std::endl; }
 };
 
+class GELoss : public LossQueue
+{
+private:
+    bool in_bad_state_;
+
+    std::bernoulli_distribution leave_good_dist_;
+    std::bernoulli_distribution leave_bad_dist_;
+    std::bernoulli_distribution drop_good_dist_;
+    std::bernoulli_distribution drop_bad_dist_;
+
+    bool drop_packet( const std::string & packet ) override;
+
+public:
+    GELoss( const double bad_loss_rate, const double prob_leave_bad,
+            const double prob_leave_good, const double good_loss_rate) :
+        in_bad_state_( false ),
+        leave_good_dist_( prob_leave_good ),
+        leave_bad_dist_( prob_leave_bad ),
+        drop_good_dist_( good_loss_rate ),
+        drop_bad_dist_( bad_loss_rate ) {
+            std::cerr << "GE loss link P(leave good) " << prob_leave_good
+                << " P(leave bad) " << prob_leave_bad
+                << " good loss rate " << good_loss_rate
+                << " bad loss rate " << bad_loss_rate << std::endl; }
+};
+
 class StochasticSwitchingLink : public LossQueue
 {
 private:
