@@ -37,6 +37,22 @@ bool IIDLoss::drop_packet( const string & packet __attribute((unused)) )
     return drop_dist_( prng_ );
 }
 
+
+bool BurstyLoss::drop_packet( const string & packet __attribute((unused)) )
+{
+    if ( in_loss_state_ ) {
+        in_loss_state_ = not ( leave_loss_dist_( prng_ ) );
+    } else {
+        in_loss_state_ = leave_no_loss_dist_( prng_ );
+    }
+
+    if ( in_loss_state_ ) {
+        return drop_dist_( prng_ );
+    } else {
+        return false;
+    }
+}
+
 static const double MS_PER_SECOND = 1000.0;
 
 StochasticSwitchingLink::StochasticSwitchingLink( const double mean_on_time, const double mean_off_time )

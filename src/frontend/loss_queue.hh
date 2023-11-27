@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 #include <random>
+#include <iostream>
 
 #include "file_descriptor.hh"
 
@@ -44,6 +45,28 @@ private:
 
 public:
     IIDLoss( const double loss_rate ) : drop_dist_( loss_rate ) {}
+};
+
+class BurstyLoss : public LossQueue
+{
+private:
+    bool in_loss_state_;
+
+    std::bernoulli_distribution leave_loss_dist_;
+    std::bernoulli_distribution leave_no_loss_dist_;
+    std::bernoulli_distribution drop_dist_;
+
+    bool drop_packet( const std::string & packet ) override;
+
+public:
+    BurstyLoss( const double loss_rate, const double prob_leave_loss, const double prob_leave_no_loss) :
+        in_loss_state_( false ),
+        leave_loss_dist_( prob_leave_loss ),
+        leave_no_loss_dist_( prob_leave_no_loss ),
+        drop_dist_( loss_rate ) {
+            std::cerr << "bursty loss link P(leave loss) " << prob_leave_loss
+                << " P(leave no loss) " << prob_leave_no_loss
+                << " loss rate " << loss_rate << std::endl; }
 };
 
 class StochasticSwitchingLink : public LossQueue

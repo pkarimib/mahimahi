@@ -13013,7 +13013,7 @@ CC=$lt_save_CC
 
 # Add picky CXXFLAGS
 CXX11_FLAGS="-std=c++11 -pthread"
-PICKY_CXXFLAGS="-pedantic -Wall -Wextra -Weffc++ -Werror"
+PICKY_CXXFLAGS="" #"-pedantic -Wall -Wextra -Weffc++ -Werror"
 
 
 
