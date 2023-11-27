@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <ifaddrs.h>
 #include <fcntl.h>
+#include <iostream>
 
 #include "interfaces.hh"
 #include "exception.hh"
@@ -132,8 +133,12 @@ std::pair< Address, Address > two_unassigned_addresses( const Address & avoid )
 
     interfaces.add_address( avoid );
 
-    auto one = interfaces.first_unassigned_address( 1 );
+    auto one = interfaces.first_unassigned_address(1);
     auto two = interfaces.first_unassigned_address( one.second + 1 );
-
+    std::cout << "avoid ip: " << avoid.ip() << " avoid port: " << avoid.port()
+              << " Shell IP egress_addr: " << one.first.ip()
+              << ", Shell IP ingress_addr: " << two.first.ip() << std::endl;
+    interfaces.add_address( one.first );
+    interfaces.add_address( two.first );
     return make_pair( one.first, two.first );
 }
