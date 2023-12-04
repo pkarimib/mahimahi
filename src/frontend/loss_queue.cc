@@ -14,7 +14,9 @@ LossQueue::LossQueue()
 
 void LossQueue::read_packet( const string & contents )
 {
-    if ( not drop_packet( contents ) ) {
+    /* now shows the relative time to the beginning of the experiment*/
+    const uint64_t now = timestamp();
+    if ( not drop_packet(now, contents ) ) {
         packet_queue_.emplace( contents );
     }
 }
@@ -32,18 +34,23 @@ unsigned int LossQueue::wait_time( void )
     return packet_queue_.empty() ? numeric_limits<uint16_t>::max() : 0;
 }
 
-bool IIDLoss::drop_packet( const string & packet __attribute((unused)) )
+bool IIDLoss::drop_packet(const uint64_t time, const string & packet __attribute((unused)) )
 {
     return drop_dist_( prng_ );
 }
 
 
-bool BurstyLoss::drop_packet( const string & packet __attribute((unused)) )
+bool BurstyLoss::drop_packet(const uint64_t time, const string & packet __attribute((unused)) )
 {
     if ( in_loss_state_ ) {
         in_loss_state_ = not ( leave_loss_dist_( prng_ ) );
     } else {
         in_loss_state_ = leave_no_loss_dist_( prng_ );
+    }
+
+    /* log state */
+    if ( log_ ) {
+        *log_ << time << " : " << in_loss_state_ << endl;
     }
 
     if ( in_loss_state_ ) {
@@ -53,12 +60,16 @@ bool BurstyLoss::drop_packet( const string & packet __attribute((unused)) )
     }
 }
 
-bool GELoss::drop_packet( const string & packet __attribute((unused)) )
+bool GELoss::drop_packet( const uint64_t time, const string & packet __attribute((unused)) )
 {
     if ( in_bad_state_ ) {
         in_bad_state_ = not ( leave_bad_dist_( prng_ ) );
     } else {
         in_bad_state_ = leave_good_dist_( prng_ );
+    }
+    /* log state */
+    if ( log_ ) {
+        *log_ << time << " : " << in_bad_state_ << endl;
     }
 
     if ( in_bad_state_ ) {
@@ -108,7 +119,7 @@ unsigned int StochasticSwitchingLink::wait_time( void )
     return next_switch_time_ - now;
 }
 
-bool StochasticSwitchingLink::drop_packet( const string & packet __attribute((unused)) )
+bool StochasticSwitchingLink::drop_packet(const uint64_t time, const string & packet __attribute((unused)) )
 {
     return !link_is_on_;
 }
@@ -145,7 +156,7 @@ unsigned int PeriodicSwitchingLink::wait_time( void )
     return next_switch_time_ - now;
 }
 
-bool PeriodicSwitchingLink::drop_packet( const string & packet __attribute((unused)) )
+bool PeriodicSwitchingLink::drop_packet(const uint64_t time, const string & packet __attribute((unused)) )
 {
     return !link_is_on_;
 }
