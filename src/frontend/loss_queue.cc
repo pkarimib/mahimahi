@@ -48,16 +48,19 @@ bool BurstyLoss::drop_packet(const uint64_t time, const string & packet __attrib
         in_loss_state_ = leave_no_loss_dist_( prng_ );
     }
 
-    /* log state */
-    if ( log_ ) {
-        *log_ << time << " : " << in_loss_state_ << endl;
+    bool dropped = false;
+    if ( in_loss_state_ ) {
+        dropped = drop_dist_( prng_ );
+    } else {
+        dropped = false;
     }
 
-    if ( in_loss_state_ ) {
-        return drop_dist_( prng_ );
-    } else {
-        return false;
+    /* log state */
+    if ( log_ ) {
+        *log_ << "time: " << time << " loss_state: " << (in_loss_state_ ? "true" : "false")
+              << " dropped: " << (dropped ? "true" : "false") << endl;
     }
+    return dropped;
 }
 
 bool GELoss::drop_packet( const uint64_t time, const string & packet __attribute((unused)) )
@@ -67,16 +70,21 @@ bool GELoss::drop_packet( const uint64_t time, const string & packet __attribute
     } else {
         in_bad_state_ = leave_good_dist_( prng_ );
     }
-    /* log state */
-    if ( log_ ) {
-        *log_ << time << " : " << in_bad_state_ << endl;
+
+    bool dropped = false;
+    if ( in_bad_state_ ) {
+        dropped = drop_bad_dist_( prng_ );
+    } else {
+        dropped = drop_good_dist_( prng_ );
     }
 
-    if ( in_bad_state_ ) {
-        return drop_bad_dist_( prng_ );
-    } else {
-        return drop_good_dist_( prng_ );
+    /* log state */
+    if ( log_ ) {
+        *log_ << "time: " << time << " loss_state: " << (in_bad_state_ ? "true" : "false")
+              << " dropped: " << (dropped ? "true" : "false") << endl;
     }
+    return dropped;
+
 }
 
 static const double MS_PER_SECOND = 1000.0;
