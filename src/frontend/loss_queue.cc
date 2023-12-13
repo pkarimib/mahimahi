@@ -65,10 +65,23 @@ bool BurstyLoss::drop_packet(const uint64_t time, const string & packet __attrib
 
 bool GELoss::drop_packet( const uint64_t time, const string & packet __attribute((unused)) )
 {
-    if ( in_bad_state_ ) {
-        in_bad_state_ = not ( leave_bad_dist_( prng_ ) );
+    bool change_state = false;
+    if (!last_switch_time_){
+        change_state = true;
+        last_switch_time_ = time;
     } else {
-        in_bad_state_ = leave_good_dist_( prng_ );
+        if (time - last_switch_time_ >= 33){
+            change_state = true;
+        }
+    }
+
+    if (change_state){
+        last_switch_time_ = time;
+        if ( in_bad_state_ ) {
+            in_bad_state_ = not ( leave_bad_dist_( prng_ ) );
+        } else {
+            in_bad_state_ = leave_good_dist_( prng_ );
+        }
     }
 
     bool dropped = false;

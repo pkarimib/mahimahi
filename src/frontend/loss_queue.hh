@@ -100,6 +100,7 @@ private:
     std::bernoulli_distribution drop_good_dist_;
     std::bernoulli_distribution drop_bad_dist_;
     std::unique_ptr<std::ofstream> log_;
+    uint64_t last_switch_time_;
     bool drop_packet( const uint64_t time, const std::string & packet ) override;
 
 public:
